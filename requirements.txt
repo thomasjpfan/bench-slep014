@@ -1,0 +1,5 @@
+fire
+memory-profiler
+pandas
+xarray
+sparse
