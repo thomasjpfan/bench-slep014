@@ -4,8 +4,7 @@ import json
 
 PARAM_DICT = {
     'max_features': [10000, 50000, 100000, 130107],
-    # 'array_out': ['default', 'pandas', 'xarray'],
-    'array_out': ['xarray']
+    'array_out': ['default', 'pandas', 'xarray'],
 }
 REPEAT = 1
 
