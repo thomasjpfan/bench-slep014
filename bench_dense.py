@@ -1,3 +1,7 @@
+import pandas as pd
+import xarray as xr
+import numpy as np
+
 from sklearn import set_config
 
 from sklearn.pipeline import make_pipeline
@@ -6,9 +10,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Ridge
 from sklearn.feature_selection import SelectKBest
 from sklearn.datasets import fetch_openml
-import pandas as pd
-import xarray as xr
-import numpy as np
 
 from bench_this import Benchmark
 
@@ -21,6 +22,7 @@ class DenseBenchmark(Benchmark):
 
     def single(self, *, array_out):
         X, y = fetch_openml(data_id=1476, return_X_y=True, as_frame=True)
+
         set_config(array_out=array_out)
         pipe = make_pipeline(StandardScaler(),
                              PCA(n_components=64),

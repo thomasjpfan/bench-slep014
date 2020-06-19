@@ -15,7 +15,7 @@ def benchmark(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         start = perf_counter_ns()
-        usage = memory_usage((f, args, kwargs), interval=0.01)
+        usage = memory_usage((f, args, kwargs), interval=0.001)
         duration = (perf_counter_ns() - start) / 1E9
         usage = [el - usage[0] for el in usage]
         kwargs.update({"peak_memory": max(usage), "time": duration})
