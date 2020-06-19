@@ -11,7 +11,7 @@ from bench_this import Benchmark
 class SparseTextBenchmark(Benchmark):
     _PARAM_DICT = {
         'max_features': [10000, 50000, 100000, 130107],
-        'array_out': ['default', 'pandas', 'xarray'],
+        'array_out': ['default', 'pandas', 'xarray', 'pydata/sparse'],
     }
     _REPEAT = 5
 

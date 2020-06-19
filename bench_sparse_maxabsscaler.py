@@ -1,5 +1,6 @@
 import pandas as pd
 import xarray as xr
+import sparse as pydata_sparse
 from scipy import sparse
 
 from sklearn.datasets import fetch_20newsgroups
@@ -13,7 +14,7 @@ from bench_this import Benchmark
 
 class SparseTextBenchmark(Benchmark):
     _PARAM_DICT = {
-        'array_out': ['default', 'pandas', 'xarray'],
+        'array_out': ['default', 'pandas', 'xarray', 'pydata/sparse'],
         'maxabs_scalers': [1, 2, 3]
     }
     _REPEAT = 5
@@ -32,6 +33,8 @@ class SparseTextBenchmark(Benchmark):
             assert isinstance(output, pd.DataFrame)
         elif array_out == 'xarray':
             assert isinstance(output, xr.DataArray)
+        elif array_out == 'pydata/sparse':
+            assert isinstance(output, pydata_sparse.COO)
         else:  # default
             assert sparse.issparse(output)
 
