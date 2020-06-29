@@ -1,3 +1,4 @@
+import csv
 import inspect
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -6,6 +7,7 @@ from functools import wraps
 from time import perf_counter_ns
 from itertools import product
 import json
+import sys
 
 import fire
 from memory_profiler import memory_usage
@@ -28,6 +30,9 @@ class Benchmark(ABC):
     _PARAM_DICT = None
     _REPEAT = None
 
+    def __init__(self, overwrite=False):
+        self.overwrite = overwrite
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         assert cls._PARAM_DICT is not None
@@ -41,7 +46,6 @@ class Benchmark(ABC):
 
         # wraps script to benchmark
         cls.single = benchmark(cls.single)
-        cls._file_name = inspect.getfile(cls)
 
     @abstractmethod
     def single(self):
@@ -49,24 +53,33 @@ class Benchmark(ABC):
 
     def full(self):
         """Run full benchmark with param_dict and repeat"""
+        file_name = inspect.getfile(self.__class__)
+
+        output = Path("results") / f"{Path(file_name).stem}.csv"
+        if output.exists() and not self.overwrite:
+            print(f"{output} exists, please pass --overwrite=True to "
+                  "overwrite file")
+            sys.exit(1)
+
         params = product(*self._PARAM_DICT.values())
         params = (dict(zip(self._PARAM_DICT, param)) for param in params)
 
-        results = []
-        for param in params:
-            for i in range(self._REPEAT):
-                cmd = ["python", self._file_name, "single"]
-                for k, v in param.items():
-                    cmd.extend([f"--{k}", f"{v}"])
+        keys = list(self._PARAM_DICT) + ['peak_memory', 'time']
+        with output.open('w') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=keys)
+            writer.writeheader()
 
-                output = run(cmd, capture_output=True)
-                result = json.loads(output.stdout)
-                print(result)
-                results.append(result)
+            for param in params:
+                for i in range(self._REPEAT):
+                    cmd = ["python", file_name, "single"]
+                    for k, v in param.items():
+                        cmd.extend([f"--{k}", f"{v}"])
 
-        output = Path("results") / f"{Path(self._file_name).stem}.json"
-        with output.open('w') as f:
-            json.dump(results, f)
+                    output = run(cmd, capture_output=True)
+                    result = json.loads(output.stdout)
+                    print(result)
+                    writer.writerow(result)
+                    csvfile.flush()
 
     @classmethod
     def _cli(cls):
